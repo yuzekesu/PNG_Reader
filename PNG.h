@@ -2,33 +2,62 @@
 #include <fstream>
 #include <memory>
 #include <ostream>
+#include <queue>
+#include <vector>
 class PNG {
 public:
 	struct Chunk {
+		struct IHDR {
+			unsigned int m_width;
+			unsigned int m_height;
+			uint8_t m_bit_depth;
+			uint8_t m_color_type;
+			uint8_t m_compression_method;
+			uint8_t m_filter_method;
+			uint8_t m_interlace_method;
+		};
+		struct Block {
+			class BitReader {
+			public:
+				BitReader() = delete;
+				BitReader(const uint8_t* data);;
+				uint16_t Read(size_t size);
+				uint16_t Peak(size_t size);
+				size_t Has_Read();
+				void Forward(size_t size);
+			private:
+				size_t m_offset = 0u;
+				const uint8_t* m_data;
+			};
+			enum CompressionType {
+				UNCOMPRESSED,
+				FIXED_HUFFMAN_CODES,
+				DYNAMIC_HUFFMAN_CODE
+			};
+			bool m_is_last_block;
+			CompressionType m_type;
+		public:
+			Block() = delete;
+			Block(PNG::Chunk::Block::BitReader& bit_reader, std::vector<uint8_t>& output);
+			void decompress_block_fixed_huffman(PNG::Chunk::Block::BitReader& bit_reader, std::vector<uint8_t>& output);
+		};
 		unsigned int m_length;
 		char m_type[5]{}; // null-terminated character
-		std::unique_ptr<uint8_t[]> m_data;
+		std::unique_ptr<uint8_t[]> m_raw_blocks;
 		unsigned int m_crc;
 	public:
 		friend std::ostream& operator<<(std::ostream& os, const PNG::Chunk& chunk);
 	};
-	struct IHDR {
-		unsigned int m_width;
-		unsigned int m_height;
-		uint8_t m_bit_depth;
-		uint8_t m_color_type;
-		uint8_t m_compression_method;
-		uint8_t m_filter_method;
-		uint8_t m_interlace_method;
-	};
 public:
 	PNG(const char* file_path);
+	static void Converts_To_Little_Endian(unsigned int& big_endian);
 private:
+	bool Load_Next_Chunk(std::ifstream& file);
+	bool Process_Chunk(PNG::Chunk& chunk);
 	void Compare_Signature(std::ifstream& file);
-	void Converts_To_Little_Endian(unsigned int& big_endian);
-	void Load_Next_Chunk(std::ifstream& file);
 public:
-	Chunk m_chunk;
-	IHDR m_ihdr;
+	std::vector<uint8_t> m_decompressed_data;
+	unsigned int m_height = 0u;
+	unsigned int m_width = 0u;
 };
 

@@ -125,11 +125,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Debug.cpp" />
     <ClCompile Include="MemoryTracker.cpp" />
     <ClCompile Include="PNG.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Debug.h" />
     <ClInclude Include="MemoryTracker.h" />
     <ClInclude Include="PNG.h" />
   </ItemGroup>
