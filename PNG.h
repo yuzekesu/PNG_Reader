@@ -24,6 +24,7 @@ public:
 				uint16_t Read(size_t size);
 				uint16_t Peak(size_t size);
 				size_t Has_Read();
+				void Align();
 				void Forward(size_t size);
 			private:
 				size_t m_offset = 0u;
@@ -39,7 +40,9 @@ public:
 		public:
 			Block() = delete;
 			Block(PNG::Chunk::Block::BitReader& bit_reader, std::vector<uint8_t>& output);
-			void decompress_block_fixed_huffman(PNG::Chunk::Block::BitReader& bit_reader, std::vector<uint8_t>& output);
+			void Decompress_Block_Dynamic_Huffman(PNG::Chunk::Block::BitReader& bit_reader, std::vector<uint8_t>& output);
+			void Decompress_Block_Fixed_Huffman(PNG::Chunk::Block::BitReader& bit_reader, std::vector<uint8_t>& output);
+			void Decompress_Block_That_Is_Uncompressed(PNG::Chunk::Block::BitReader& bit_reader, std::vector<uint8_t>& output);
 		};
 		unsigned int m_length;
 		char m_type[5]{}; // null-terminated character
@@ -51,6 +54,7 @@ public:
 public:
 	PNG(const char* file_path);
 	static void Converts_To_Little_Endian(unsigned int& big_endian);
+	static void Converts_To_Little_Endian(uint16_t& big_endian);
 private:
 	bool Load_Next_Chunk(std::ifstream& file);
 	bool Process_Chunk(PNG::Chunk& chunk);
