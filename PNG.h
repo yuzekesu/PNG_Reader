@@ -56,8 +56,9 @@ public:
 	static void Converts_To_Little_Endian(unsigned int& big_endian);
 	static void Converts_To_Little_Endian(uint16_t& big_endian);
 private:
-	bool Load_Chunk(std::ifstream& file, std::vector<uint8_t>& decompressed_data);
-	bool Process_Chunk(PNG::Chunk& chunk, std::vector<uint8_t>& decompressed_data);
+	bool Load_Chunk(std::ifstream& file, std::vector<uint8_t>& compressed_data);
+	bool Process_Chunk(PNG::Chunk& chunk, std::vector<uint8_t>& compressed_data);
+	std::vector<uint8_t>Decompress_Blocks(std::vector<uint8_t>& compressed_data);
 	void Apply_Filter(std::vector<uint8_t>& decompressed_data);
 	void Compare_Signature(std::ifstream& file);
 	void Load_RGBA(const std::vector<uint8_t>& decompressed_data);

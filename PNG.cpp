@@ -15,8 +15,9 @@ PNG::PNG(const char* file_path) {
 	else {
 		Compare_Signature(file);
 	}
-	std::vector<uint8_t> decompressed_data;
-	while (Load_Chunk(file, decompressed_data));
+	std::vector<uint8_t> compressed_data;
+	while (Load_Chunk(file, compressed_data));
+	std::vector<uint8_t> decompressed_data = Decompress_Blocks(compressed_data);
 	Apply_Filter(decompressed_data);
 	Load_RGBA(decompressed_data);
 }
@@ -37,7 +38,7 @@ void PNG::Converts_To_Little_Endian(uint16_t& big_endian) {
 	big_endian = result;
 }
 
-bool PNG::Load_Chunk(std::ifstream& file, std::vector<uint8_t>& decompressed_data) {
+bool PNG::Load_Chunk(std::ifstream& file, std::vector<uint8_t>& compressed_data) {
 	Chunk chunk;
 	Chunk::IHDR ihdr;
 	file.read((char*)&chunk.m_length, sizeof(chunk.m_length));
@@ -47,10 +48,10 @@ bool PNG::Load_Chunk(std::ifstream& file, std::vector<uint8_t>& decompressed_dat
 	file.read((char*)chunk.m_raw_blocks.get(), chunk.m_length);
 	file.read((char*)&chunk.m_crc, sizeof(chunk.m_crc));
 	Converts_To_Little_Endian(chunk.m_crc);
-	return Process_Chunk(chunk, decompressed_data);
+	return Process_Chunk(chunk, compressed_data);
 }
 
-bool PNG::Process_Chunk(PNG::Chunk& chunk, std::vector<uint8_t>& decompressed_data) {
+bool PNG::Process_Chunk(PNG::Chunk& chunk, std::vector<uint8_t>& compressed_data) {
 	bool we_still_have_more_chunk_to_be_processed = true;
 	std::string this_chunk_is(chunk.m_type);
 	if (this_chunk_is == "IHDR") {
@@ -61,19 +62,25 @@ bool PNG::Process_Chunk(PNG::Chunk& chunk, std::vector<uint8_t>& decompressed_da
 		m_height = ihdr.m_height;
 	}
 	else if (this_chunk_is == "IDAT") {
-		bool is_all_the_decompressed_data_retrieved_from_this_chunk = false;
-		PNG::Chunk::Block::BitReader bit_reader(chunk.m_raw_blocks.get());
-		bit_reader.Forward(16u);
-		do {
-			size_t bits_processed = 0u;
-			PNG::Chunk::Block block(bit_reader, decompressed_data);
-			is_all_the_decompressed_data_retrieved_from_this_chunk = block.m_is_last_block;
-		} while (!is_all_the_decompressed_data_retrieved_from_this_chunk);
+		compressed_data.insert(compressed_data.end(), chunk.m_raw_blocks.get(), chunk.m_raw_blocks.get() + chunk.m_length);
 	}
 	else if (this_chunk_is == "IEND") {
 		we_still_have_more_chunk_to_be_processed = false;
 	}
 	return we_still_have_more_chunk_to_be_processed;
+}
+
+std::vector<uint8_t> PNG::Decompress_Blocks(std::vector<uint8_t>& compressed_data) {
+	std::vector<uint8_t> decompressed_data;
+	bool is_all_the_decompressed_data_retrieved_from_this_chunk = false;
+	PNG::Chunk::Block::BitReader bit_reader(compressed_data.data());
+	bit_reader.Forward(16u);
+	do {
+		size_t bits_processed = 0u;
+		PNG::Chunk::Block block(bit_reader, decompressed_data);
+		is_all_the_decompressed_data_retrieved_from_this_chunk = block.m_is_last_block;
+	} while (!is_all_the_decompressed_data_retrieved_from_this_chunk);
+	return decompressed_data;
 }
 
 void PNG::Apply_Filter(std::vector<uint8_t>& decompressed_data) {
