@@ -58,9 +58,11 @@ public:
 private:
 	bool Load_Next_Chunk(std::ifstream& file);
 	bool Process_Chunk(PNG::Chunk& chunk);
+	void Apply_Filter();
 	void Compare_Signature(std::ifstream& file);
 public:
 	std::vector<uint8_t> m_decompressed_data;
+	std::vector<uint8_t> m_rgba;
 	unsigned int m_height = 0u;
 	unsigned int m_width = 0u;
 };

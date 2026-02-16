@@ -95,10 +95,15 @@ inline std::vector<std::optional<Code>> HuffmanTree<Code, Symbol, Length>::Gener
 	Length the_length = 0u;
 	Code the_code = 0u;
 	size_t how_many = 0u;
+	Length prev_length = 1u;
 	do {
+		prev_length = the_length;
 		the_length = Find_Lowest(lengths, the_length);
-		if (the_length != 0u) {
+		for (Length i = 0u; i < the_length - prev_length; i++) {
 			the_code = Generate_The_First_Canoncial_Huffman_Code_With_This_Length(the_code, how_many);
+			how_many = 0u;
+		}
+		if (the_length != 0u) {
 			how_many = How_Many(lengths, the_length);
 			size_t counter = 0u;
 			for (size_t i = 0u; i < lengths.size(); i++) {

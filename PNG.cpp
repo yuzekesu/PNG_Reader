@@ -16,6 +16,7 @@ PNG::PNG(const char* file_path) {
 		Compare_Signature(file);
 	}
 	while (Load_Next_Chunk(file));
+	Apply_Filter();
 }
 
 void PNG::Converts_To_Little_Endian(unsigned int& big_endian) {
@@ -71,6 +72,17 @@ bool PNG::Process_Chunk(PNG::Chunk& chunk) {
 		we_still_have_more_chunk_to_be_processed = false;
 	}
 	return we_still_have_more_chunk_to_be_processed;
+}
+
+void PNG::Apply_Filter() {
+	for (auto i = m_decompressed_data.begin(); i != m_decompressed_data.end();) {
+		i = m_decompressed_data.erase(i);  // erase and get next iterator
+
+		// Skip m_width elements (if they exist)
+		for (int skip = 0; skip < m_width && i != m_decompressed_data.end(); ++skip) {
+			++i;
+		}
+	}
 }
 
 void PNG::Compare_Signature(std::ifstream& file) {
@@ -327,6 +339,7 @@ void PNG::Chunk::Block::Decompress_Block_Dynamic_Huffman(PNG::Chunk::Block::BitR
 			}
 		}
 	} while (current_symbol != 256u);
+	int a = 1;
 }
 
 void PNG::Chunk::Block::Decompress_Block_Fixed_Huffman(PNG::Chunk::Block::BitReader& bit_reader, std::vector<uint8_t>& output) {
