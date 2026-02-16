@@ -47,5 +47,13 @@
     <ClInclude Include="Displayer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="shader_in_char_star.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="VertexShader.hlsl">
+      <Filter>Resource Files</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

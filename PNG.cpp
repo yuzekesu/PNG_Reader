@@ -15,8 +15,10 @@ PNG::PNG(const char* file_path) {
 	else {
 		Compare_Signature(file);
 	}
-	while (Load_Next_Chunk(file));
-	Apply_Filter();
+	std::vector<uint8_t> decompressed_data;
+	while (Load_Chunk(file, decompressed_data));
+	Apply_Filter(decompressed_data);
+	Load_RGBA(decompressed_data);
 }
 
 void PNG::Converts_To_Little_Endian(unsigned int& big_endian) {
@@ -35,7 +37,7 @@ void PNG::Converts_To_Little_Endian(uint16_t& big_endian) {
 	big_endian = result;
 }
 
-bool PNG::Load_Next_Chunk(std::ifstream& file) {
+bool PNG::Load_Chunk(std::ifstream& file, std::vector<uint8_t>& decompressed_data) {
 	Chunk chunk;
 	Chunk::IHDR ihdr;
 	file.read((char*)&chunk.m_length, sizeof(chunk.m_length));
@@ -45,10 +47,10 @@ bool PNG::Load_Next_Chunk(std::ifstream& file) {
 	file.read((char*)chunk.m_raw_blocks.get(), chunk.m_length);
 	file.read((char*)&chunk.m_crc, sizeof(chunk.m_crc));
 	Converts_To_Little_Endian(chunk.m_crc);
-	return Process_Chunk(chunk);
+	return Process_Chunk(chunk, decompressed_data);
 }
 
-bool PNG::Process_Chunk(PNG::Chunk& chunk) {
+bool PNG::Process_Chunk(PNG::Chunk& chunk, std::vector<uint8_t>& decompressed_data) {
 	bool we_still_have_more_chunk_to_be_processed = true;
 	std::string this_chunk_is(chunk.m_type);
 	if (this_chunk_is == "IHDR") {
@@ -64,7 +66,7 @@ bool PNG::Process_Chunk(PNG::Chunk& chunk) {
 		bit_reader.Forward(16u);
 		do {
 			size_t bits_processed = 0u;
-			PNG::Chunk::Block block(bit_reader, m_decompressed_data);
+			PNG::Chunk::Block block(bit_reader, decompressed_data);
 			is_all_the_decompressed_data_retrieved_from_this_chunk = block.m_is_last_block;
 		} while (!is_all_the_decompressed_data_retrieved_from_this_chunk);
 	}
@@ -74,15 +76,8 @@ bool PNG::Process_Chunk(PNG::Chunk& chunk) {
 	return we_still_have_more_chunk_to_be_processed;
 }
 
-void PNG::Apply_Filter() {
-	for (auto i = m_decompressed_data.begin(); i != m_decompressed_data.end();) {
-		i = m_decompressed_data.erase(i);  // erase and get next iterator
-
-		// Skip m_width elements (if they exist)
-		for (int skip = 0; skip < m_width && i != m_decompressed_data.end(); ++skip) {
-			++i;
-		}
-	}
+void PNG::Apply_Filter(std::vector<uint8_t>& decompressed_data) {
+	// to be implement
 }
 
 void PNG::Compare_Signature(std::ifstream& file) {
@@ -91,6 +86,16 @@ void PNG::Compare_Signature(std::ifstream& file) {
 	file.read((char*)file_signature, sizeof(file_signature));
 	if (not std::equal(std::begin(signature), std::end(signature), std::begin(file_signature))) {
 		throw std::runtime_error("Not PNG-file");
+	}
+}
+
+void PNG::Load_RGBA(const std::vector<uint8_t>& decompressed_data) {
+	m_rgba.resize(decompressed_data.size() - m_height);
+	for (unsigned i = 0u; i < m_height; i++) {
+		auto begin = decompressed_data.begin() + i * (m_width * 4 + 1) + 1;
+		auto end = begin + (m_width * 4);
+		auto destination = m_rgba.begin() + i * m_width * 4;
+		std::copy(begin, end, destination);
 	}
 }
 
