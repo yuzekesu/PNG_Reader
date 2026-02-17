@@ -1,11 +1,18 @@
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 #include "Displayer.h"
+#include "PNG.h"
 #include "shader_in_char_star.h"
-#include <cassert>
 #include <d3d11.h>
+#include <d3dcommon.h>
 #include<d3dcompiler.h>
-#include <wrl.h>
+#include <dxgi.h>
+#include <dxgiformat.h>
+#include <dxgitype.h>
+#include <libloaderapi.h>
+#include <stdexcept>
+#include <Windows.h>
+#include <wrl/client.h>
 
 Displayer::Displayer() {
 	m_x = GetSystemMetrics(SM_CXSCREEN);
@@ -20,10 +27,13 @@ Displayer::Displayer() {
 }
 
 Displayer::Displayer(PNG& png) {
-	int width_screen = GetSystemMetrics(SM_CXSCREEN);
-	int height_screen = GetSystemMetrics(SM_CYSCREEN);
-	int numerator = 1;
-	int denominator = 1;
+	unsigned width_screen = GetSystemMetrics(SM_CXSCREEN);
+	unsigned height_screen = GetSystemMetrics(SM_CYSCREEN);
+	unsigned numerator = 1;
+	unsigned denominator = 1;
+	while (png.m_height * numerator < height_screen && png.m_width * numerator < width_screen) {
+		numerator++;
+	}
 	while (png.m_width * numerator / denominator > width_screen || png.m_height * numerator / denominator > height_screen) {
 		denominator++;
 	}
@@ -129,8 +139,8 @@ void Displayer::Initialize_DirectX() {
 	D3D11_VIEWPORT viewport{};
 	viewport.TopLeftX = 0.0f;
 	viewport.TopLeftY = 0.0f;
-	viewport.Height = m_height;
-	viewport.Width = m_width;
+	viewport.Height = static_cast<float>(m_height);
+	viewport.Width = static_cast<float>(m_width);
 	viewport.MaxDepth = 1.f;
 	viewport.MinDepth = 0.f;
 	context->RSSetViewports(1, &viewport);
