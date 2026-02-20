@@ -204,6 +204,7 @@ void PNG::Chunk::Block::Decompress_Block_Dynamic_Huffman(PNG::Chunk::Block::BitR
 	for (size_t i = 0u; i < header.HLIT; i++) {
 		for (uint8_t u = code_tree.Minimum_Length(); u <= 8u; u++) {
 			uint16_t temp_bits = bit_reader.Peak(u);
+			temp_bits = code_tree.Reverse_Bits(temp_bits, u);
 			std::optional<uint16_t> temp_symbol = code_tree.Decode(temp_bits, u);
 			if (temp_symbol != std::nullopt) {
 				bit_reader.Forward(u);
@@ -267,6 +268,7 @@ void PNG::Chunk::Block::Decompress_Block_Dynamic_Huffman(PNG::Chunk::Block::BitR
 	for (uint8_t i = 0u; i < header.HDIST; i++) {
 		for (uint8_t u = code_tree.Minimum_Length(); u <= 8; u++) {
 			uint8_t temp_bits = bit_reader.Peak(u);
+			temp_bits = code_tree.Reverse_Bits(temp_bits, u);
 			std::optional<uint8_t> temp_symbol = code_tree.Decode(temp_bits, u);
 			if (temp_symbol != std::nullopt) {
 				bit_reader.Forward(u);
@@ -309,6 +311,7 @@ void PNG::Chunk::Block::Decompress_Block_Dynamic_Huffman(PNG::Chunk::Block::BitR
 	do {
 		for (size_t i = literal_tree.Minimum_Length(); i <= 16; i++) {
 			uint16_t temp_bits = bit_reader.Peak(i);
+			temp_bits = literal_tree.Reverse_Bits(temp_bits, i);
 			std::optional<uint16_t> temp_symbol = literal_tree.Decode(temp_bits, i);
 			if (temp_symbol != std::nullopt) {
 				bit_reader.Forward(i);
@@ -335,6 +338,7 @@ void PNG::Chunk::Block::Decompress_Block_Dynamic_Huffman(PNG::Chunk::Block::BitR
 					uint16_t length = temp_code.base_length + bit_reader.Read(temp_code.extra_bits);
 					for (uint16_t u = distance_tree.Minimum_Length(); u <= 16u; u++) {
 						uint16_t distance_bits = bit_reader.Peak(u);
+						distance_bits = distance_tree.Reverse_Bits(distance_bits, u);
 						std::optional<Distance_Code> distance_code = distance_tree.Decode(distance_bits, u);
 						if (distance_code != std::nullopt) {
 							bit_reader.Forward(u);
