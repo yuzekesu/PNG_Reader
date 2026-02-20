@@ -5,7 +5,7 @@
 #include <windows.h>
 
 int WINAPI WinMain(_In_ HINSTANCE, _In_opt_ HINSTANCE, _In_ LPSTR, _In_ int) {
-	PNG png("./image/windows.png");
+	PNG png("./image/1.png");
 	// PNG png("./image/1.png");
 	// PNG png("./image/vivado.png");
 	Displayer displayer(png);

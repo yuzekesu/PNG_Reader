@@ -20,14 +20,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11Device> device;
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext> context;
 	Microsoft::WRL::ComPtr<IDXGISwapChain> swapchain;
-	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> rtv;
-	Microsoft::WRL::ComPtr<ID3D11VertexShader> vs;
-	Microsoft::WRL::ComPtr<ID3D11PixelShader> ps;
-	Microsoft::WRL::ComPtr<ID3D11Buffer> vbuffer;
-	Microsoft::WRL::ComPtr<ID3D11Buffer> ibuffer;
-	Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler;
-	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputlayout;
-	Microsoft::WRL::ComPtr<ID3D11Texture2D> tex;
-	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv;
+
+
 };
 

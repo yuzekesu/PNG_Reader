@@ -3,6 +3,7 @@
 #include "Displayer.h"
 #include "PNG.h"
 #include "shader_in_char_star.h"
+#include <Windows.h>
 #include <d3d11.h>
 #include <d3dcommon.h>
 #include<d3dcompiler.h>
@@ -11,7 +12,6 @@
 #include <dxgitype.h>
 #include <libloaderapi.h>
 #include <stdexcept>
-#include <Windows.h>
 #include <wrl/client.h>
 
 Displayer::Displayer() {
@@ -48,10 +48,9 @@ Displayer::Displayer(PNG& png) {
 }
 
 void Displayer::Show(PNG& png) {
-	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };
-	context->ClearRenderTargetView(rtv.Get(), clearColor);
 	HRESULT hr;
 	using namespace Microsoft::WRL;
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> tex;
 	D3D11_TEXTURE2D_DESC desc_tex{};
 	desc_tex.ArraySize = 1;
 	desc_tex.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
@@ -77,6 +76,7 @@ void Displayer::Show(PNG& png) {
 		0                       // Depth pitch (0 for 2D)
 	);
 
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv;
 	D3D11_SHADER_RESOURCE_VIEW_DESC desc_srv{};
 	desc_srv.Format = desc_tex.Format;
 	desc_srv.Texture2D.MipLevels = -1;
@@ -87,7 +87,9 @@ void Displayer::Show(PNG& png) {
 	context->PSSetShaderResources(0, 1, srv.GetAddressOf());
 
 	context->GenerateMips(srv.Get());
-
+	context->DrawIndexed(6, 0, 0);
+	hr = swapchain->Present(1, 0);
+	if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
 }
 
 LRESULT __stdcall Displayer::Window_Procedure(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -126,6 +128,7 @@ void Displayer::Initialize_DirectX() {
 	if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
 
 	// render target view
+	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> rtv;
 	ComPtr<ID3D11Texture2D> back_buffer;
 	hr = swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)back_buffer.GetAddressOf());
 	if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
@@ -146,6 +149,8 @@ void Displayer::Initialize_DirectX() {
 	context->RSSetViewports(1, &viewport);
 
 	// vertex- || pixel- shader
+	Microsoft::WRL::ComPtr<ID3D11VertexShader> vs;
+	Microsoft::WRL::ComPtr<ID3D11PixelShader> ps;
 	ComPtr<ID3DBlob> blob_vs, blob_ps, error;
 	hr = D3DCompile(VertexShader, sizeof(VertexShader), NULL, NULL, NULL, "Vertex_Shader", "vs_5_0", 0, 0, blob_vs.ReleaseAndGetAddressOf(), error.ReleaseAndGetAddressOf());
 	if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
@@ -159,6 +164,7 @@ void Displayer::Initialize_DirectX() {
 	context->PSSetShader(ps.Get(), NULL, 0);
 
 	// input layout
+	Microsoft::WRL::ComPtr<ID3D11InputLayout> inputlayout;
 	D3D11_INPUT_ELEMENT_DESC input_desc_1{};
 	input_desc_1.AlignedByteOffset = 0;
 	input_desc_1.Format = DXGI_FORMAT_R32G32_FLOAT;
@@ -181,6 +187,7 @@ void Displayer::Initialize_DirectX() {
 	context->IASetInputLayout(inputlayout.Get());
 
 	// vertex buffer
+	Microsoft::WRL::ComPtr<ID3D11Buffer> vbuffer;
 	struct Input {
 		float pos[2]; // x, y
 		float tex[2]; // u, v
@@ -207,6 +214,7 @@ void Displayer::Initialize_DirectX() {
 
 	// index buffer
 	// unsigned indices[6]{ 0u, 1u, 2u, 2u, 3u, 0u };
+	Microsoft::WRL::ComPtr<ID3D11Buffer> ibuffer;
 	unsigned indices[6]{ 0u, 3u, 2u, 2u, 1u, 0u };
 	D3D11_BUFFER_DESC ibuffer_desc{};
 	ibuffer_desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
@@ -223,6 +231,7 @@ void Displayer::Initialize_DirectX() {
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// sample state
+	Microsoft::WRL::ComPtr<ID3D11SamplerState> sampler;
 	D3D11_SAMPLER_DESC desc_samp{};
 	desc_samp.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
 	desc_samp.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
@@ -258,8 +267,5 @@ void Displayer::Message_Loop() {
 	MSG msg;
 	while (GetMessage(&msg, NULL, NULL, NULL)) {
 		DispatchMessage(&msg);
-		context->DrawIndexed(6, 0, 0);
-		HRESULT hr = swapchain->Present(1, 0);
-		if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
 	}
 }
