@@ -53,6 +53,7 @@ public:
 	};
 public:
 	PNG(const char* file_path);
+	PNG(const void* pSysMem);
 	static void Converts_To_Little_Endian(unsigned int& big_endian);
 	static void Converts_To_Little_Endian(uint16_t& big_endian);
 private:

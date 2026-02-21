@@ -53,28 +53,22 @@ void Displayer::Show(PNG& png) {
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> tex;
 	D3D11_TEXTURE2D_DESC desc_tex{};
 	desc_tex.ArraySize = 1;
-	desc_tex.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+	desc_tex.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 	desc_tex.CPUAccessFlags = 0;
 	desc_tex.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc_tex.Height = png.m_height;
-	desc_tex.MipLevels = 0;
-	desc_tex.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+	desc_tex.MipLevels = 1;
+	desc_tex.MiscFlags = 0;
 	desc_tex.SampleDesc.Count = 1;
 	desc_tex.SampleDesc.Quality = 0;
 	desc_tex.Usage = D3D11_USAGE_DEFAULT;
 	desc_tex.Width = png.m_width;
 	D3D11_SUBRESOURCE_DATA data{};
 	data.pSysMem = png.m_rgba.data();
-	hr = device->CreateTexture2D(&desc_tex, NULL, tex.ReleaseAndGetAddressOf());
+	data.SysMemPitch = png.m_width * 4u;
+	hr = device->CreateTexture2D(&desc_tex, &data, tex.ReleaseAndGetAddressOf());
 	if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
-	context->UpdateSubresource(
-		tex.Get(),              // Resource
-		0,                      // Subresource (mip 0)
-		NULL,                   // Box (NULL = whole texture)
-		png.m_rgba.data(),      // Source data
-		png.m_width * 4,        // Row pitch (4 bytes per pixel for RGBA8)
-		0                       // Depth pitch (0 for 2D)
-	);
+
 
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv;
 	D3D11_SHADER_RESOURCE_VIEW_DESC desc_srv{};
@@ -86,7 +80,6 @@ void Displayer::Show(PNG& png) {
 	if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
 	context->PSSetShaderResources(0, 1, srv.GetAddressOf());
 
-	context->GenerateMips(srv.Get());
 	context->DrawIndexed(6, 0, 0);
 	hr = swapchain->Present(1, 0);
 	if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
@@ -97,6 +90,15 @@ LRESULT __stdcall Displayer::Window_Procedure(HWND hwnd, UINT uMsg, WPARAM wPara
 	case WM_CLOSE:
 		PostQuitMessage(0);
 		break;
+	case WM_KEYDOWN:
+		if (wParam == VK_ESCAPE) {
+			PostQuitMessage(0);
+		}
+		break;
+	case WM_RBUTTONDOWN:
+		if (MessageBox(NULL, L"Exit the PNG_Reader ?", L"Ask", MB_YESNO) == IDYES) {
+			PostQuitMessage(0);
+		}
 	}
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
@@ -135,8 +137,6 @@ void Displayer::Initialize_DirectX() {
 	hr = device->CreateRenderTargetView(back_buffer.Get(), NULL, rtv.ReleaseAndGetAddressOf());
 	if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
 	context->OMSetRenderTargets(1u, rtv.GetAddressOf(), NULL);
-	float clearColor[4] = { 0.0f, 0.0f, 0.0f, 1.0f };  // Black
-	context->ClearRenderTargetView(rtv.Get(), clearColor);
 
 	// viewport
 	D3D11_VIEWPORT viewport{};
@@ -213,9 +213,8 @@ void Displayer::Initialize_DirectX() {
 	context->IASetVertexBuffers(0, 1, vbuffer.GetAddressOf(), &stride, &offset);
 
 	// index buffer
-	// unsigned indices[6]{ 0u, 1u, 2u, 2u, 3u, 0u };
 	Microsoft::WRL::ComPtr<ID3D11Buffer> ibuffer;
-	unsigned indices[6]{ 0u, 3u, 2u, 2u, 1u, 0u };
+	unsigned indices[6]{ 0u, 3u, 2u, 2u, 1u, 0u }; // clockwise
 	D3D11_BUFFER_DESC ibuffer_desc{};
 	ibuffer_desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
 	ibuffer_desc.ByteWidth = sizeof(indices);
@@ -258,6 +257,7 @@ void Displayer::Initialize_Window() {
 	wc.lpfnWndProc = Displayer::Window_Procedure;
 	wc.lpszClassName = L"hehe";
 	wc.style = CS_HREDRAW | CS_VREDRAW;
+	wc.hCursor = LoadCursor(NULL, IDC_CROSS);
 	RegisterClass(&wc);
 	m_window = CreateWindowW(L"hehe", L"PNG_Reader", WS_POPUPWINDOW, m_x, m_y, m_width, m_height, NULL, NULL, wc.hInstance, NULL);
 	ShowWindow(m_window, SW_SHOW);

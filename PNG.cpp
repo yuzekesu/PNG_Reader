@@ -22,6 +22,41 @@ PNG::PNG(const char* file_path) {
 	Load_RGBA(decompressed_data);
 }
 
+PNG::PNG(const void* pSysMem) {
+	const uint8_t* bytes = reinterpret_cast<const uint8_t*>(pSysMem);
+	size_t offset = 8u;
+	std::vector<uint8_t> compressed_data;
+	bool is_not_the_last_chunk = true;
+	while (is_not_the_last_chunk) {
+		Chunk chunk;
+		Chunk::IHDR ihdr;
+		//std::memcpy(&chunk.m_length, bytes + offset, 4);
+		chunk.m_length = *(reinterpret_cast<const unsigned int*>(bytes + offset));
+		offset += sizeof(chunk.m_length);
+		Converts_To_Little_Endian(chunk.m_length);
+		std::copy_n(reinterpret_cast<const char*>(bytes + offset), 4u, chunk.m_type);
+		offset += sizeof(4u);
+		chunk.m_raw_blocks = std::make_unique<uint8_t[]>(chunk.m_length);
+		std::copy_n(reinterpret_cast<const char*>(bytes + offset), chunk.m_length, chunk.m_raw_blocks.get());
+		offset += chunk.m_length;
+		chunk.m_crc = *(reinterpret_cast<const unsigned int*>(bytes + offset));
+		offset += sizeof(chunk.m_crc);
+		Converts_To_Little_Endian(chunk.m_crc);
+
+		//file.read((char*)&chunk.m_length, sizeof(chunk.m_length));
+		//Converts_To_Little_Endian(chunk.m_length);
+		//file.read(chunk.m_type, 4i64);
+		//chunk.m_raw_blocks = std::make_unique<uint8_t[]>(chunk.m_length);
+		//file.read((char*)chunk.m_raw_blocks.get(), chunk.m_length);
+		//file.read((char*)&chunk.m_crc, sizeof(chunk.m_crc));
+		//Converts_To_Little_Endian(chunk.m_crc);
+		is_not_the_last_chunk = Process_Chunk(chunk, compressed_data);
+	}
+	std::vector<uint8_t> decompressed_data = Decompress_Blocks(compressed_data);
+	Apply_Filter(decompressed_data);
+	Load_RGBA(decompressed_data);
+}
+
 void PNG::Converts_To_Little_Endian(unsigned int& big_endian) {
 	unsigned int result = 0u;
 	result |= (big_endian & 0xFF000000) >> 24;
@@ -48,6 +83,7 @@ bool PNG::Load_Chunk(std::ifstream& file, std::vector<uint8_t>& compressed_data)
 	file.read((char*)chunk.m_raw_blocks.get(), chunk.m_length);
 	file.read((char*)&chunk.m_crc, sizeof(chunk.m_crc));
 	Converts_To_Little_Endian(chunk.m_crc);
+	// Debug::Chunk(chunk);
 	return Process_Chunk(chunk, compressed_data);
 }
 
@@ -84,7 +120,67 @@ std::vector<uint8_t> PNG::Decompress_Blocks(std::vector<uint8_t>& compressed_dat
 }
 
 void PNG::Apply_Filter(std::vector<uint8_t>& decompressed_data) {
-	// to be implement
+	enum Filter {
+		None = 0,
+		Sub = 1,
+		Up = 2,
+		Average = 3,
+		Paeth = 4
+	};
+	const uint8_t BPP = 4u;
+	for (unsigned i = 0u; i < m_height; i++) {
+		auto begin = decompressed_data.begin() + i * (m_width * 4 + 1) + 1;
+		auto end = begin + (m_width * 4);
+		uint8_t filter = *(begin - 1);
+		for (auto u = begin; u != end; ++u) {
+			switch (filter) {
+			case None:
+				break;
+			case Sub:
+			{
+				if (u != begin && u != begin + 1 && u != begin + 2 && u != begin + 3) {
+					auto left = u - BPP;
+					*u = *u + *left;
+				}
+				break;
+			}
+			case Up:
+			{
+				auto up = u - (m_width * BPP + 1);
+				*u = *u + *up;
+				break;
+			}
+			case Average:
+			{
+				if (u != begin && u != begin + 1 && u != begin + 2 && u != begin + 3) {
+					auto left = u - 4;
+					auto up = u - (m_width * BPP + 1);
+					*u = *u + (*left + *up) / 2;
+				}
+				break;
+			}
+			case Paeth:
+			{
+				auto left = u - BPP;
+				auto up = u - (m_width * BPP + 1);
+				auto left_up = u - (m_width * BPP + 1) - BPP;
+				uint8_t p = *left + *up - *left_up;
+				uint8_t p_left = std::abs(p - *left);
+				uint8_t p_up = std::abs(p - *up);
+				uint8_t p_left_up = std::abs(p - *left_up);
+
+				if (p_left <= p_up && p_left <= p_left_up) p = *up;
+				else if (p_up <= p_left_up) p = *left;
+				else p = *left_up;
+				*u = *u + p;
+				break;
+			}
+			default:
+				throw std::runtime_error("Reading invalid filter.");
+				break;
+			}
+		}
+	}
 }
 
 void PNG::Compare_Signature(std::ifstream& file) {
