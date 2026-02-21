@@ -125,20 +125,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="code\Displayer.cpp" />
+    <ClCompile Include="code\PNG.cpp" />
     <ClCompile Include="Debug.cpp" />
-    <ClCompile Include="Displayer.cpp" />
     <ClCompile Include="MemoryTracker.cpp" />
-    <ClCompile Include="PNG.cpp" />
     <ClCompile Include="WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="code\Displayer.h" />
+    <ClInclude Include="code\HuffmanTree.h" />
+    <ClInclude Include="code\PNG.h" />
+    <ClInclude Include="code\shader_in_char_star.h" />
     <ClInclude Include="Debug.h" />
-    <ClInclude Include="Displayer.h" />
-    <ClInclude Include="HuffmanTree.h" />
     <ClInclude Include="MemoryTracker.h" />
-    <ClInclude Include="PNG.h" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="shader_in_char_star.h" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="VertexShader.hlsl">

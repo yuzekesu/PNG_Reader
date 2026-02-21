@@ -1,39 +1,32 @@
-#include "Displayer.h"
-#include "PNG.h"
+#include "./code/Displayer.h"
+#include "./code/PNG.h"
 #include "resource.h"
-#include <cstdint>
 #include <sal.h>
 #include <string>
 #include <windows.h>
 
-#ifdef NODEBUG
-#define MODE_IS std::string(lpCmdLine) == "\0"
-#else
-#define MODE_IS 0
-#endif
-
-
-
-int WINAPI WinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE, _In_ LPSTR lpCmdLine, _In_ int) {
-	if (MODE_IS) {
+int WINAPI wWinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE, _In_ LPWSTR lpCmdLine, _In_ int) {
+	if (std::wstring(lpCmdLine) == L"\0") {
 		HRSRC hrsrc = FindResource(hInst, MAKEINTRESOURCE(IDB_PNG1), RT_RCDATA);
 		if (!hrsrc) throw std::runtime_error("FindResource failed");
 		HGLOBAL hglob = LoadResource(hInst, hrsrc);
 		if (!hglob) throw std::runtime_error("LoadResource failed");
-		DWORD size = SizeofResource(hInst, hrsrc);
-		if (!size) throw std::runtime_error("SizeofResource failed");
 		void* ptr = LockResource(hglob);
 		if (!ptr) throw std::runtime_error("LockResource failed");
 		PNG png(ptr);
 		Displayer displayer(png);
 	}
 	else {
-		//PNG png("./image/1.png");
-		//PNG png("./image/windows.png");
-		//PNG png("./image/fox.png");
-		PNG png("./image/vivado.png");
+		std::vector<wchar_t> buffer;
+		for (int i = 0; lpCmdLine[i] != '\0'; i++) {
+			wchar_t c = lpCmdLine[i];
+			if (c != '"') {
+				buffer.push_back(c);
+			}
+		}
+		buffer.push_back('\0');
+		PNG png(buffer.data());
 		Displayer displayer(png);
-
 	}
 	return 0;
 }
