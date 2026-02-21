@@ -81,7 +81,6 @@ bool PNG::Load_Chunk(std::ifstream& file, std::vector<uint8_t>& compressed_data)
 	file.read((char*)chunk.m_raw_blocks.get(), chunk.m_length);
 	file.read((char*)&chunk.m_crc, sizeof(chunk.m_crc));
 	Converts_To_Little_Endian(chunk.m_crc);
-	// Debug::Chunk(chunk);
 	return Process_Chunk(chunk, compressed_data);
 }
 
@@ -94,6 +93,13 @@ bool PNG::Process_Chunk(PNG::Chunk& chunk, std::vector<uint8_t>& compressed_data
 		PNG::Converts_To_Little_Endian(ihdr.m_height);
 		m_width = ihdr.m_width;
 		m_height = ihdr.m_height;
+		// ADD VALIDATION
+		if (ihdr.m_color_type != 6) { // 6 = RGBA
+			throw std::runtime_error("Unsupported color type. Only RGBA (type 6) is supported.");
+		}
+		if (ihdr.m_bit_depth != 8) {
+			throw std::runtime_error("Unsupported bit depth. Only 8-bit is supported.");
+		}
 	}
 	else if (this_chunk_is == "IDAT") {
 		compressed_data.insert(compressed_data.end(), chunk.m_raw_blocks.get(), chunk.m_raw_blocks.get() + chunk.m_length);
