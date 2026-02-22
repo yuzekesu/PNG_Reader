@@ -3,6 +3,20 @@
 #include <memory>
 #include <ostream>
 #include <vector>
+
+// YES, ALL HUFFMAN(usually MSB first) in DEFLATE are stored REVERSED in the bitsstream(LSB first)!
+// MSB: where we traverse from the root of the Huffman tree.
+// LSB: where we CANNOT traverse from the leafs of the huffman tree.
+// 
+// 
+// The Order Of PNG Is: **************************************
+// PNG::PNG(...)						load the bitsstream of the .png
+//		PNG::Load_Chunk(...)			load the next chunk in the bitsstream
+//			PNG::Process_Chunk(...)		load and save the next block in the chunk into "raw_block" and concatenate them into "compressed_data"
+// PNG::Decompress_Blocks(...)			decompress the "compressed_data"
+// PNG::Apply_Filter(...)				apply filters to the compressed data
+// PNG::Load_RGBA(...)					remove the filter info from the "compressed_data"
+// ***********************************************************
 class PNG {
 public:
 	struct Chunk {

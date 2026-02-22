@@ -31,7 +31,7 @@ private:
 	size_t How_Many(const std::vector<Length>& lengths, Length ref);
 	std::vector<std::optional<Code>> Generate_Canoncial_Huffman_Code(const std::vector<Length>& lengths);
 	void Construct_Huffman_Tree(const std::vector<std::optional<Code>>& codes, const std::vector<Symbol>& symbols, const std::vector<Length>& lengths);
-	Code Generate_The_First_Canoncial_Huffman_Code_With_This_Length(Code already_generated, size_t how_many_was_it);
+	Code Generate_The_First_Canoncial_Huffman_Code_With_This_Length(Code last_code_length, size_t how_many_was_sharing_the_same_length);
 	Length Find_Bigger_Any(const std::vector<Length>& lengths, Length anchor);
 	Length Find_Lowest(const std::vector<Length>& lengths, Length bigger_than_this);
 private:
@@ -44,7 +44,7 @@ private:
 //*******************************************************************
 
 /// <summary>
-/// Canoncial huffman tree.
+/// generate canoncial huffman tree based on the length table and symbol table
 /// </summary>
 /// <param name="lengths">: huffman code length</param>
 template<typename Code, typename Symbol, typename Length>
@@ -54,10 +54,12 @@ inline HuffmanTree<Code, Symbol, Length>::HuffmanTree(const std::vector<Symbol>&
 	m_minimum_length_to_decode = Find_Lowest(lengths, 0u);
 }
 /// <summary>
-/// Decode the code using unordered_map.
+/// decode the huffman code using and return the corresponding symbol
 /// </summary>
 template<typename Code, typename Symbol, typename Length>
 inline std::optional<Symbol> HuffmanTree<Code, Symbol, Length>::Decode(Code code, Length length) {
+	/// the reason that we need the "length" is because of the padding
+	/// when we read 1 bit and pass this to "Decode", the function cannot know if that is 1 bit or 8 bits since we dont have bit type in c++.
 	HuffmanCode huffman_code;
 	huffman_code.code = code;
 	huffman_code.length = length;
@@ -72,7 +74,7 @@ inline Length HuffmanTree<Code, Symbol, Length>::Minimum_Length() {
 	return m_minimum_length_to_decode;
 }
 /// <summary>
-/// How many huffman code that share the same length.
+/// how many huffman code that share the same length.
 /// </summary>
 template<typename Code, typename Symbol, typename Length>
 inline size_t HuffmanTree<Code, Symbol, Length>::How_Many(const std::vector<Length>& lengths, Length ref) {
@@ -85,11 +87,11 @@ inline size_t HuffmanTree<Code, Symbol, Length>::How_Many(const std::vector<Leng
 	return counter;
 }
 /// <summary>
-/// This starts with the huffman code that has the lowest length && first encountered in the Vector.
-/// There is an algorithm this method follows here.
+/// generate an vector of canoncial huffman codes based on the length table 
 /// </summary>
 template<typename Code, typename Symbol, typename Length>
 inline std::vector<std::optional<Code>> HuffmanTree<Code, Symbol, Length>::Generate_Canoncial_Huffman_Code(const std::vector<Length>& lengths) {
+	/// This starts with the huffman code that has the lowest length && first encountered in the Vector.
 	std::vector<std::optional<Code>> codes(lengths.size());
 	Length the_length = 0u;
 	Code the_code = 0u;
@@ -116,10 +118,11 @@ inline std::vector<std::optional<Code>> HuffmanTree<Code, Symbol, Length>::Gener
 	return codes;
 }
 /// <summary>
-/// No calculations here. Just combines the result that other member function did.
+/// construct the "tree" using std::map.
 /// </summary>
 template<typename Code, typename Symbol, typename Length>
 inline void HuffmanTree<Code, Symbol, Length>::Construct_Huffman_Tree(const std::vector<std::optional<Code>>& codes, const std::vector<Symbol>& symbols, const std::vector<Length>& lengths) {
+	/// No calculations here. Just combines the result that other member function did.
 	for (size_t i = 0u; i < codes.size(); i++) {
 		if (codes[i] != std::nullopt) {
 			HuffmanCode huffman_code;
@@ -131,14 +134,19 @@ inline void HuffmanTree<Code, Symbol, Length>::Construct_Huffman_Tree(const std:
 	}
 }
 /// <summary>
-/// Think this as array, you need to know what index was the last chunk, and how big was the last chunk.
+/// generate the first canoncial huffman code that match this length based on the last generated code length.
 /// </summary>
 template<typename Code, typename Symbol, typename Length>
-inline Code HuffmanTree<Code, Symbol, Length>::Generate_The_First_Canoncial_Huffman_Code_With_This_Length(Code already_generated, size_t how_many_was_it) {
-	return (already_generated + how_many_was_it) << 1;
+inline Code HuffmanTree<Code, Symbol, Length>::Generate_The_First_Canoncial_Huffman_Code_With_This_Length(Code last_code_length, size_t how_many_was_sharing_the_same_length) {
+	/// the core of generating the canoncial huffman code
+	return (last_code_length + how_many_was_sharing_the_same_length) << 1;
 }
+/// <summary>
+/// reverse the bits inside the huffman code
+/// </summary>
 template<typename Code, typename Symbol, typename Length>
 inline Code HuffmanTree<Code, Symbol, Length>::Reverse_Bits(Code code, Length code_length) {
+	/// some of the compression might have reversed bitsstream, for example DEFLATE in .png
 	Code result = 0;
 	for (Length i = 0; i < code_length; i++) {
 		if (code & (1 << i)) {
@@ -148,7 +156,7 @@ inline Code HuffmanTree<Code, Symbol, Length>::Reverse_Bits(Code code, Length co
 	return result;
 }
 /// <summary>
-/// Returns the first Length encountered that bigger then the Anchor in a iteration.
+/// returns the first Length encountered that bigger then the Anchor in a iteration
 /// </summary>
 template<typename Code, typename Symbol, typename Length>
 inline Length HuffmanTree<Code, Symbol, Length>::Find_Bigger_Any(const std::vector<Length>& lengths, Length anchor) {
@@ -162,7 +170,7 @@ inline Length HuffmanTree<Code, Symbol, Length>::Find_Bigger_Any(const std::vect
 	return bigger;
 }
 /// <summary>
-/// Find_The_Lowest with lower bound.
+/// Find_The_Lowest with lower bound
 /// </summary>
 template<typename Code, typename Symbol, typename Length>
 inline Length HuffmanTree<Code, Symbol, Length>::Find_Lowest(const std::vector<Length>& lengths, Length bigger_than_this) {

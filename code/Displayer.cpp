@@ -14,6 +14,9 @@
 #include <stdexcept>
 #include <wrl/client.h>
 
+/// <summary>
+/// Constructs a default win32 window.
+/// </summary>
 Displayer::Displayer() {
 	m_x = GetSystemMetrics(SM_CXSCREEN);
 	m_y = GetSystemMetrics(SM_CYSCREEN);
@@ -25,7 +28,9 @@ Displayer::Displayer() {
 	Initialize_DirectX();
 	Message_Loop();
 }
-
+/// <summary>
+/// Construct win32 window and displays the .png file. No updates.
+/// </summary>
 Displayer::Displayer(PNG& png) {
 	Calculate_Window_Size(png);
 	Initialize_Window();
@@ -33,7 +38,9 @@ Displayer::Displayer(PNG& png) {
 	Show(png);
 	Message_Loop();
 }
-
+/// <summary>
+/// Default procedure.
+/// </summary>
 LRESULT __stdcall Displayer::Window_Procedure(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	switch (uMsg) {
 	case WM_CLOSE:
@@ -51,7 +58,9 @@ LRESULT __stdcall Displayer::Window_Procedure(HWND hwnd, UINT uMsg, WPARAM wPara
 	}
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
-
+/// <summary>
+/// Reads the size of the png and makes sure the win32 window is big enough and small enough to display it. This does not resize the win32 window.
+/// </summary>
 void Displayer::Calculate_Window_Size(PNG& png) {
 	unsigned width_screen = GetSystemMetrics(SM_CXSCREEN);
 	unsigned height_screen = GetSystemMetrics(SM_CYSCREEN);
@@ -68,7 +77,9 @@ void Displayer::Calculate_Window_Size(PNG& png) {
 	m_x = (width_screen - m_width) / 2;
 	m_y = (height_screen - m_height) / 2;
 }
-
+/// <summary>
+/// Initializes the Direct3D 11 rendering pipeline.
+/// </summary>
 void Displayer::Initialize_DirectX() {
 	using namespace Microsoft::WRL;
 	HRESULT hr;
@@ -93,20 +104,20 @@ void Displayer::Initialize_DirectX() {
 	desc_swapchain.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 	desc_swapchain.Windowed = true;
 	hr = D3D11CreateDeviceAndSwapChain(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, D3D11_CREATE_DEVICE_DEBUG, NULL, 0, D3D11_SDK_VERSION, &desc_swapchain, swapchain.ReleaseAndGetAddressOf(), device.ReleaseAndGetAddressOf(), NULL, context.ReleaseAndGetAddressOf());
-	if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
+	if (FAILED(hr)) { throw std::runtime_error("D3D11CreateDeviceAndSwapChain"); }
 
 	// render target view
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> rtv;
 	ComPtr<ID3D11Texture2D> back_buffer;
 	hr = swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)back_buffer.GetAddressOf());
-	if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
+	if (FAILED(hr)) { throw std::runtime_error("swapchain->GetBuffer ID3D11RenderTargetView"); }
 	hr = device->CreateRenderTargetView(back_buffer.Get(), NULL, rtv.ReleaseAndGetAddressOf());
-	if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
+	if (FAILED(hr)) { throw std::runtime_error("device->CreateRenderTargetView"); }
 	context->OMSetRenderTargets(1u, rtv.GetAddressOf(), NULL);
 
 	// viewport
 	D3D11_VIEWPORT viewport{};
-	viewport.TopLeftX = 0.0f;
+	viewport.TopLeftX = 0.0f; // viewport that cover the whole win32 window.
 	viewport.TopLeftY = 0.0f;
 	viewport.Height = static_cast<float>(m_height);
 	viewport.Width = static_cast<float>(m_width);
@@ -119,14 +130,14 @@ void Displayer::Initialize_DirectX() {
 	Microsoft::WRL::ComPtr<ID3D11PixelShader> ps;
 	ComPtr<ID3DBlob> blob_vs, blob_ps, error;
 	hr = D3DCompile(VertexShader, sizeof(VertexShader), NULL, NULL, NULL, "Vertex_Shader", "vs_5_0", 0, 0, blob_vs.ReleaseAndGetAddressOf(), error.ReleaseAndGetAddressOf());
-	if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
+	if (FAILED(hr)) { throw std::runtime_error("D3DCompile vertex shader"); }
 	hr = device->CreateVertexShader(blob_vs->GetBufferPointer(), blob_vs->GetBufferSize(), NULL, vs.ReleaseAndGetAddressOf());
-	if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
+	if (FAILED(hr)) { throw std::runtime_error("device->CreateVertexShader"); }
 	context->VSSetShader(vs.Get(), NULL, 0);
 	hr = D3DCompile(PixelShader, sizeof(PixelShader), NULL, NULL, NULL, "Pixel_Shader", "ps_5_0", 0, 0, blob_ps.ReleaseAndGetAddressOf(), error.ReleaseAndGetAddressOf());
-	if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
+	if (FAILED(hr)) { throw std::runtime_error("D3DCompile pixel shader"); }
 	hr = device->CreatePixelShader(blob_ps->GetBufferPointer(), blob_ps->GetBufferSize(), NULL, ps.ReleaseAndGetAddressOf());
-	if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
+	if (FAILED(hr)) { throw std::runtime_error("device->CreatePixelShader"); }
 	context->PSSetShader(ps.Get(), NULL, 0);
 
 	// input layout
@@ -149,7 +160,7 @@ void Displayer::Initialize_DirectX() {
 	input_desc_2.SemanticName = "TEXCOORD";
 	D3D11_INPUT_ELEMENT_DESC input_descs[2] = { input_desc_1, input_desc_2 };
 	hr = device->CreateInputLayout(input_descs, sizeof(input_descs) / sizeof(input_descs[0]), blob_vs->GetBufferPointer(), blob_vs->GetBufferSize(), inputlayout.ReleaseAndGetAddressOf());
-	if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
+	if (FAILED(hr)) { throw std::runtime_error("device->CreateInputLayout"); }
 	context->IASetInputLayout(inputlayout.Get());
 
 	// vertex buffer
@@ -173,7 +184,7 @@ void Displayer::Initialize_DirectX() {
 	D3D11_SUBRESOURCE_DATA vdata{};
 	vdata.pSysMem = inputs;
 	hr = device->CreateBuffer(&vbuffer_desc, &vdata, vbuffer.ReleaseAndGetAddressOf());
-	if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
+	if (FAILED(hr)) { throw std::runtime_error("device->CreateBuffer vertex buffer"); }
 	UINT stride = sizeof(inputs[0]);
 	UINT offset = 0u;
 	context->IASetVertexBuffers(0, 1, vbuffer.GetAddressOf(), &stride, &offset);
@@ -191,7 +202,7 @@ void Displayer::Initialize_DirectX() {
 	D3D11_SUBRESOURCE_DATA idata{};
 	idata.pSysMem = indices;
 	hr = device->CreateBuffer(&ibuffer_desc, &idata, ibuffer.ReleaseAndGetAddressOf());
-	if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
+	if (FAILED(hr)) { throw std::runtime_error("device->CreateBuffer index buffer"); }
 	context->IASetIndexBuffer(ibuffer.Get(), DXGI_FORMAT_R32_UINT, 0);
 	context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
@@ -206,18 +217,19 @@ void Displayer::Initialize_DirectX() {
 	desc_samp.BorderColor[2] = 0;
 	desc_samp.BorderColor[3] = 0;
 	desc_samp.ComparisonFunc = D3D11_COMPARISON_ALWAYS;
-	//desc_samp.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+	//desc_samp.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;  // blocky & pixelated
 	desc_samp.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 	desc_samp.MaxAnisotropy = 1;
 	desc_samp.MaxLOD = D3D11_MIP_LOD_BIAS_MAX;
 	desc_samp.MinLOD = 0;
 	desc_samp.MipLODBias = 0.0f;
 	hr = device->CreateSamplerState(&desc_samp, sampler.ReleaseAndGetAddressOf());
-	if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
+	if (FAILED(hr)) { throw std::runtime_error("device->CreateSamplerState"); }
 	context->PSSetSamplers(0, 1, sampler.GetAddressOf());
-
 }
-
+/// <summary>
+/// Initializes and creates a win32 window.
+/// </summary>
 void Displayer::Initialize_Window() {
 	WNDCLASS wc{};
 	wc.hInstance = GetModuleHandle(NULL);
@@ -234,7 +246,9 @@ void Displayer::Initialize_Window() {
 	DragAcceptFiles(m_window, true);
 	ShowWindow(m_window, SW_SHOW);
 }
-
+/// <summary>
+/// Default message loop.
+/// </summary>
 void Displayer::Message_Loop() {
 	MSG msg;
 	while (GetMessage(&msg, NULL, NULL, NULL)) {
@@ -251,7 +265,9 @@ void Displayer::Message_Loop() {
 		}
 	}
 }
-
+/// <summary>
+/// Resize the win32 window Displayer possess base on its member attrimutes.
+/// </summary>
 void Displayer::Resize() {
 	D3D11_VIEWPORT vp{};
 	vp.Height = m_height;
@@ -268,7 +284,6 @@ void Displayer::Resize() {
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> back_buffer;
 	hr = swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)back_buffer.GetAddressOf());
 	if (FAILED(hr)) { throw std::runtime_error("Failed to get back buffer"); }
-
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView> rtv;
 	hr = device->CreateRenderTargetView(back_buffer.Get(), nullptr, rtv.ReleaseAndGetAddressOf());
 	if (FAILED(hr)) { throw std::runtime_error("Failed to create RTV"); }
@@ -281,10 +296,14 @@ void Displayer::Resize() {
 	AdjustWindowRect(&r, WS_POPUPWINDOW, false);
 	SetWindowPos(m_window, NULL, m_x, m_y, r.right - r.left, r.bottom - r.top, SWP_SHOWWINDOW);
 }
-
+/// <summary>
+/// Displays the .png.
+/// </summary>
 void Displayer::Show(PNG& png) {
 	HRESULT hr;
 	using namespace Microsoft::WRL;
+
+	// load the RGBA data into the texture.
 	Microsoft::WRL::ComPtr<ID3D11Texture2D> tex;
 	D3D11_TEXTURE2D_DESC desc_tex{};
 	desc_tex.ArraySize = 1;
@@ -292,8 +311,8 @@ void Displayer::Show(PNG& png) {
 	desc_tex.CPUAccessFlags = 0;
 	desc_tex.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	desc_tex.Height = png.m_height;
-	desc_tex.MipLevels = 0;
-	desc_tex.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+	desc_tex.MipLevels = 1;
+	desc_tex.MiscFlags = 0;
 	desc_tex.SampleDesc.Count = 1;
 	desc_tex.SampleDesc.Quality = 0;
 	desc_tex.Usage = D3D11_USAGE_DEFAULT;
@@ -301,24 +320,23 @@ void Displayer::Show(PNG& png) {
 	D3D11_SUBRESOURCE_DATA data{};
 	data.pSysMem = png.m_rgba.data();
 	data.SysMemPitch = png.m_width * 4u;
-	hr = device->CreateTexture2D(&desc_tex, NULL, tex.ReleaseAndGetAddressOf());
-	if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
-	context->UpdateSubresource(tex.Get(), 0u, NULL, png.m_rgba.data(), png.m_width * 4, 0);
+	hr = device->CreateTexture2D(&desc_tex, &data, tex.ReleaseAndGetAddressOf());
+	if (FAILED(hr)) { throw std::runtime_error("Failed to device->CreateTexture2D"); }
 
+	// bind the texture to the pipeline with ShaderResourceView
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> srv;
 	D3D11_SHADER_RESOURCE_VIEW_DESC desc_srv{};
 	desc_srv.Format = desc_tex.Format;
-	desc_srv.Texture2D.MipLevels = -1;
+	desc_srv.Texture2D.MipLevels = 1;
 	desc_srv.Texture2D.MostDetailedMip = 0;
 	desc_srv.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 	hr = device->CreateShaderResourceView(tex.Get(), &desc_srv, srv.ReleaseAndGetAddressOf());
-	if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
-	context->GenerateMips(srv.Get());
+	if (FAILED(hr)) { throw std::runtime_error("Failed to device->CreateShaderResourceView"); }
 	context->PSSetShaderResources(0, 1, srv.GetAddressOf());
 
+	// draw the faces where the texture will be "textured" on.
 	context->DrawIndexed(6, 0, 0);
 	hr = swapchain->Present(1, 0);
-	if (FAILED(hr)) { throw std::runtime_error("HRESULT problem"); }
-
+	if (FAILED(hr)) { throw std::runtime_error("Failed to swapchain->Present"); }
 }
 
