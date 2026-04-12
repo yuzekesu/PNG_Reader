@@ -260,59 +260,7 @@ std::ostream& operator<<(std::ostream& os, const PNG::Chunk& chunk) {
 	}
 	return os;
 }
-/// <summary>
-/// Constructs BitReader with existing bitsstream (uint8_t*).
-/// </summary>
-PNG::Chunk::Block::BitReader::BitReader(const uint8_t* data) { m_data = data; }
-/// <summary>
-/// Reads bits from right to left.
-/// </summary>
-uint16_t PNG::Chunk::Block::BitReader::Read(size_t size) {
-	/// designed for "a decoder that traverses the tree in the LSB-first direction" ???
-	uint16_t result = Peak(size);
-	Forward(size);
-	return result;
-}
-/// <summary>
-/// Peaks bits from right to left.
-/// </summary>
-uint16_t PNG::Chunk::Block::BitReader::Peak(size_t size) {
-	if (size > 16) {
-		throw std::runtime_error("Too big reading size for BitReader.");
-	}
-	uint16_t result = 0u;
-	for (size_t i = 0; i < size; i++) {
-		const size_t byte_offset = (m_offset + i) / 8u;
-		const size_t bit_offset_in_that_byte = (m_offset + i) % 8u;
-		const uint16_t current_bit = 1u << i;
-		const uint8_t current_bit_in_that_byte = 1u << bit_offset_in_that_byte;
-		if (m_data[byte_offset] & current_bit_in_that_byte) {
-			result |= current_bit;
-		}
-	}
-	return result;
-}
-/// <summary>
-/// Returns the current offset.
-/// </summary>
-size_t PNG::Chunk::Block::BitReader::Has_Read() {
-	return m_offset;
-}
-/// <summary>
-/// Aligns the offset to the byte using cielling.
-/// </summary>
-void PNG::Chunk::Block::BitReader::Align() {
-	size_t rest = m_offset % 8u;
-	if (rest) {
-		m_offset += 8u - rest;
-	}
-}
-/// <summary>
-/// Increases the current offset.
-/// </summary>
-void PNG::Chunk::Block::BitReader::Forward(size_t size) {
-	m_offset += size;
-}
+
 /// <summary>
 /// Constructs the block and concatenate the decompressed version to the "output".
 /// </summary>

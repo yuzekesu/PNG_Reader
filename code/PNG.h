@@ -30,19 +30,7 @@ public:
 			uint8_t m_interlace_method;
 		};
 		struct Block {
-			class BitReader {
-			public:
-				BitReader() = delete;
-				BitReader(const uint8_t* data);;
-				uint16_t Read(size_t size);
-				uint16_t Peak(size_t size);
-				size_t Has_Read();
-				void Align();
-				void Forward(size_t size);
-			private:
-				size_t m_offset = 0u;
-				const uint8_t* m_data;
-			};
+
 			enum CompressionType {
 				UNCOMPRESSED,
 				FIXED_HUFFMAN_CODES,

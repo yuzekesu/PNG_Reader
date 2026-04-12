@@ -125,6 +125,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BitReader.cpp" />
     <ClCompile Include="code\Displayer.cpp" />
     <ClCompile Include="code\PNG.cpp" />
     <ClCompile Include="code\Debug.cpp" />
@@ -132,6 +133,7 @@
     <ClCompile Include="code\WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BitReader.h" />
     <ClInclude Include="code\Displayer.h" />
     <ClInclude Include="code\HuffmanTree.h" />
     <ClInclude Include="code\PNG.h" />
