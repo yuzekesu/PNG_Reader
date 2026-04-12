@@ -130,7 +130,7 @@ bool PNG::Process_Chunk(PNG::Chunk& chunk, std::vector<uint8_t>& compressed_data
 std::vector<uint8_t> PNG::Decompress_Blocks(std::vector<uint8_t>& compressed_data) {
 	std::vector<uint8_t> decompressed_data;
 	bool is_all_the_decompressed_data_retrieved_from_this_chunk = false;
-	PNG::Chunk::Block::BitReader bit_reader(compressed_data.data());
+	BitReader<uint16_t> bit_reader(compressed_data.data());
 	bit_reader.Forward(16u);
 	do {
 		size_t bits_processed = 0u;
@@ -264,7 +264,7 @@ std::ostream& operator<<(std::ostream& os, const PNG::Chunk& chunk) {
 /// <summary>
 /// Constructs the block and concatenate the decompressed version to the "output".
 /// </summary>
-PNG::Chunk::Block::Block(PNG::Chunk::Block::BitReader& bit_reader, std::vector<uint8_t>& output) {
+PNG::Chunk::Block::Block(BitReader<uint16_t>& bit_reader, std::vector<uint8_t>& output) {
 	m_is_last_block = bit_reader.Read(1) & 0b00000001;
 	uint16_t compression_type = bit_reader.Read(2);
 	compression_type &= 0b0000011;
@@ -287,7 +287,7 @@ PNG::Chunk::Block::Block(PNG::Chunk::Block::BitReader& bit_reader, std::vector<u
 /// <summary>
 /// Decompress current block (inside the bit_reader) with dynamic huffman in mind.
 /// </summary>
-void PNG::Chunk::Block::Decompress_Block_Dynamic_Huffman(PNG::Chunk::Block::BitReader& bit_reader, std::vector<uint8_t>& output) {
+void PNG::Chunk::Block::Decompress_Block_Dynamic_Huffman(BitReader<uint16_t>& bit_reader, std::vector<uint8_t>& output) {
 	struct Header_Processed {
 		size_t HLIT; // 5 bits
 		size_t HDIST;// 5 bits
@@ -531,7 +531,7 @@ void PNG::Chunk::Block::Decompress_Block_Dynamic_Huffman(PNG::Chunk::Block::BitR
 /// <summary>
 /// do people ever use this ?
 /// </summary>
-void PNG::Chunk::Block::Decompress_Block_Fixed_Huffman(PNG::Chunk::Block::BitReader& bit_reader, std::vector<uint8_t>& output) {
+void PNG::Chunk::Block::Decompress_Block_Fixed_Huffman(BitReader<uint16_t>& bit_reader, std::vector<uint8_t>& output) {
 	uint8_t result = 0u;
 	const uint16_t length_base[] = {
 		3, 4, 5, 6, 7, 8, 9, 10,	// 257-264
@@ -612,7 +612,7 @@ void PNG::Chunk::Block::Decompress_Block_Fixed_Huffman(PNG::Chunk::Block::BitRea
 /// <summary>
 /// Just concatenate the uncompressed block onto the output (std:vector&lt;uint8_t&gt;).
 /// </summary>
-void PNG::Chunk::Block::Decompress_Block_That_Is_Uncompressed(PNG::Chunk::Block::BitReader& bit_reader, std::vector<uint8_t>& output) {
+void PNG::Chunk::Block::Decompress_Block_That_Is_Uncompressed(BitReader<uint16_t>& bit_reader, std::vector<uint8_t>& output) {
 	struct Header_Processed {
 		uint16_t LEN;
 		uint16_t NLEN;

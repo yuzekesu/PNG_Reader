@@ -3,6 +3,7 @@
 #include <memory>
 #include <ostream>
 #include <vector>
+#include "BitReader.h"
 
 // YES, ALL HUFFMAN(usually MSB first) in DEFLATE are stored REVERSED in the bitsstream(LSB first)!
 // MSB: where we traverse from the root of the Huffman tree.
@@ -40,10 +41,10 @@ public:
 			CompressionType m_type;
 		public:
 			Block() = delete;
-			Block(PNG::Chunk::Block::BitReader& bit_reader, std::vector<uint8_t>& output);
-			void Decompress_Block_Dynamic_Huffman(PNG::Chunk::Block::BitReader& bit_reader, std::vector<uint8_t>& output);
-			void Decompress_Block_Fixed_Huffman(PNG::Chunk::Block::BitReader& bit_reader, std::vector<uint8_t>& output);
-			void Decompress_Block_That_Is_Uncompressed(PNG::Chunk::Block::BitReader& bit_reader, std::vector<uint8_t>& output);
+			Block(BitReader<uint16_t>& bit_reader, std::vector<uint8_t>& output);
+			void Decompress_Block_Dynamic_Huffman(BitReader<uint16_t>& bit_reader, std::vector<uint8_t>& output);
+			void Decompress_Block_Fixed_Huffman(BitReader<uint16_t>& bit_reader, std::vector<uint8_t>& output);
+			void Decompress_Block_That_Is_Uncompressed(BitReader<uint16_t>& bit_reader, std::vector<uint8_t>& output);
 		};
 		unsigned int m_length;
 		char m_type[5]{}; // null-terminated character

@@ -42,7 +42,7 @@
     <ClCompile Include="code\PNG.cpp">
       <Filter>Source Files\png</Filter>
     </ClCompile>
-    <ClCompile Include="BitReader.cpp">
+    <ClCompile Include="code\BitReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -68,7 +68,7 @@
     <ClInclude Include="code\PNG.h">
       <Filter>Header Files\png</Filter>
     </ClInclude>
-    <ClInclude Include="BitReader.h">
+    <ClInclude Include="code\BitReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
