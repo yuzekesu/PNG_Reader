@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MemoryTracker.cpp">
+    <ClCompile Include="code\MemoryTracker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Debug.cpp">
+    <ClCompile Include="code\Debug.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="code\Displayer.cpp">
@@ -27,18 +27,18 @@
     <ClCompile Include="code\PNG.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WinMain.cpp">
+    <ClCompile Include="code\WinMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MemoryTracker.h">
+    <ClInclude Include="code\MemoryTracker.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Debug.h">
+    <ClInclude Include="code\Debug.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
+    <ClInclude Include="code\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="code\Displayer.h">
@@ -55,12 +55,12 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="VertexShader.hlsl">
+    <FxCompile Include="code\VertexShader.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="PNG_Reader.rc">
+    <ResourceCompile Include="code\PNG_Reader.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>

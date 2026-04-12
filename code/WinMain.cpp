@@ -1,5 +1,5 @@
-#include "./code/Displayer.h"
-#include "./code/PNG.h"
+#include "Displayer.h"
+#include "PNG.h"
 #include "resource.h"
 #include <exception>
 #include <sal.h>

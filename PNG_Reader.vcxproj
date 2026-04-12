@@ -127,21 +127,21 @@
   <ItemGroup>
     <ClCompile Include="code\Displayer.cpp" />
     <ClCompile Include="code\PNG.cpp" />
-    <ClCompile Include="Debug.cpp" />
-    <ClCompile Include="MemoryTracker.cpp" />
-    <ClCompile Include="WinMain.cpp" />
+    <ClCompile Include="code\Debug.cpp" />
+    <ClCompile Include="code\MemoryTracker.cpp" />
+    <ClCompile Include="code\WinMain.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="code\Displayer.h" />
     <ClInclude Include="code\HuffmanTree.h" />
     <ClInclude Include="code\PNG.h" />
     <ClInclude Include="code\shader_in_char_star.h" />
-    <ClInclude Include="Debug.h" />
-    <ClInclude Include="MemoryTracker.h" />
-    <ClInclude Include="resource.h" />
+    <ClInclude Include="code\Debug.h" />
+    <ClInclude Include="code\MemoryTracker.h" />
+    <ClInclude Include="code\resource.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="VertexShader.hlsl">
+    <FxCompile Include="code\VertexShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
@@ -151,7 +151,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="PNG_Reader.rc" />
+    <ResourceCompile Include="code\PNG_Reader.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="image\default.png" />
