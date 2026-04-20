@@ -39,7 +39,7 @@ void PNG::Chunk::Block::Decompress_Block_Dynamic_Huffman(BitReader<uint16_t>& bi
 	header.HCLEN = bit_reader.Read(4u) + 4u;
 
 	// HCLEN
-	// this part is constructing canoncial huffman codes that has "length of huffman codes" as its symbol
+	// this constructs a Huffman tree where each symbol represents the bit-length of a code in the main huffman tree
 	std::vector<uint8_t> code_indices = { 16, 17, 18, 0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15 };
 	std::vector<uint8_t> code_lengths(code_indices.size());
 	for (int i = 0; i < header.HCLEN; i++) { // just reading the length
@@ -47,17 +47,19 @@ void PNG::Chunk::Block::Decompress_Block_Dynamic_Huffman(BitReader<uint16_t>& bi
 	}
 	std::vector<uint8_t> code_symbols;
 	for (uint8_t i = 0; i < code_lengths.size(); i++) {
+
+		// the order doesnt follow the code_indices
 		code_symbols.push_back(i);
 	}
-	HuffmanTree<uint8_t, uint8_t, uint8_t> code_tree(code_symbols, code_lengths);
+	HuffmanTree<uint8_t, uint8_t, uint8_t> code_length_tree(code_symbols, code_lengths);
 
-	// HLIT
-	// the canoncial huffman starts here
+	// HLIT - literal/length huffman tree
+	// the MAIN canoncial huffman starts here
 	// reading bits for "length of huffman codes" and construct the canoncial huffman
 	// the previous section will acts as decoder since the "length of huffman codes" is stored as canoncial huffman code
 	std::vector<uint8_t> literal_lengths(286u);
 	for (size_t i = 0u; i < header.HLIT; i++) { // for so many literal
-		for (uint8_t u = code_tree.Minimum_Length(); u <= 8u; u++) {
+		for (uint8_t u = code_length_tree.Minimum_Length(); u <= 8u; u++) {
 
 			// start getting "length of huffman codes" using the previous canoncial huffman codes
 			// bit per bit reading
@@ -65,9 +67,10 @@ void PNG::Chunk::Block::Decompress_Block_Dynamic_Huffman(BitReader<uint16_t>& bi
 
 			// why reversed: historical reason.
 			// huffman codes stores with Least-Significant-Bit first in DEFLATE.
-			// but canoncial huffman codes are usually described MSB-first.
-			temp_bits = code_tree.Reverse_Bits(temp_bits, u);
-			std::optional<uint16_t> temp_symbol = code_tree.Decode(temp_bits, u);
+			// but canoncial huffman codes are usually described MSB-first arithmetically.
+			// should make the BitReader return the reversed bits directly instead of doing it afterward
+			temp_bits = code_length_tree.Reverse_Bits(temp_bits, u);
+			std::optional<uint16_t> temp_symbol = code_length_tree.Decode(temp_bits, u);
 			if (temp_symbol != std::nullopt) {
 
 				// update the offset in the bit-reader when found the symbol using huffman
@@ -142,10 +145,10 @@ void PNG::Chunk::Block::Decompress_Block_Dynamic_Huffman(BitReader<uint16_t>& bi
 	for (uint8_t i = 0u; i < header.HDIST; i++) {
 
 		// reads bit by bit from the bit reader
-		for (uint8_t u = code_tree.Minimum_Length(); u <= 8; u++) {
+		for (uint8_t u = code_length_tree.Minimum_Length(); u <= 8; u++) {
 			uint8_t temp_bits = bit_reader.Peak(u);
-			temp_bits = code_tree.Reverse_Bits(temp_bits, u);
-			std::optional<uint8_t> temp_symbol = code_tree.Decode(temp_bits, u);
+			temp_bits = code_length_tree.Reverse_Bits(temp_bits, u);
+			std::optional<uint8_t> temp_symbol = code_length_tree.Decode(temp_bits, u);
 			if (temp_symbol != std::nullopt) {
 
 				// found matching huffman and update the offset
