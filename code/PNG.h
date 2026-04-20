@@ -4,6 +4,7 @@
 #include <ostream>
 #include <vector>
 #include "BitReader.h"
+#include "PNG.Chunk.h"
 
 // YES, ALL HUFFMAN(usually MSB first) in DEFLATE are stored REVERSED in the bitsstream(LSB first)!
 // MSB: where we traverse from the root of the Huffman tree.
@@ -20,47 +21,13 @@
 // ***********************************************************
 class PNG {
 public:
-	struct Chunk {
-		struct IHDR {
-			unsigned int m_width;
-			unsigned int m_height;
-			uint8_t m_bit_depth;
-			uint8_t m_color_type;
-			uint8_t m_compression_method;
-			uint8_t m_filter_method;
-			uint8_t m_interlace_method;
-		};
-		struct Block {
-
-			enum CompressionType {
-				UNCOMPRESSED,
-				FIXED_HUFFMAN_CODES,
-				DYNAMIC_HUFFMAN_CODE
-			};
-			bool m_is_last_block;
-			CompressionType m_type;
-		public:
-			Block() = delete;
-			Block(BitReader<uint16_t>& bit_reader, std::vector<uint8_t>& output);
-			void Decompress_Block_Dynamic_Huffman(BitReader<uint16_t>& bit_reader, std::vector<uint8_t>& output);
-			void Decompress_Block_Fixed_Huffman(BitReader<uint16_t>& bit_reader, std::vector<uint8_t>& output);
-			void Decompress_Block_That_Is_Uncompressed(BitReader<uint16_t>& bit_reader, std::vector<uint8_t>& output);
-		};
-		unsigned int m_length;
-		char m_type[5]{}; // null-terminated character
-		std::unique_ptr<uint8_t[]> m_raw_blocks;
-		unsigned int m_crc;
-	public:
-		friend std::ostream& operator<<(std::ostream& os, const PNG::Chunk& chunk);
-	};
-public:
 	PNG(const wchar_t* file_path);
 	PNG(const void* pSysMem);
 	static void Converts_To_Little_Endian(unsigned int& big_endian);
 	static void Converts_To_Little_Endian(uint16_t& big_endian);
 private:
 	bool Load_Chunk(std::ifstream& file, std::vector<uint8_t>& compressed_data);
-	bool Process_Chunk(PNG::Chunk& chunk, std::vector<uint8_t>& compressed_data);
+	bool Process_Chunk(::PNG::Chunk& chunk, std::vector<uint8_t>& compressed_data);
 	std::vector<uint8_t>Decompress_Blocks(std::vector<uint8_t>& compressed_data);
 	void Apply_Filter(std::vector<uint8_t>& decompressed_data);
 	void Compare_Signature(std::ifstream& file);

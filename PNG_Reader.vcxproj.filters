@@ -45,6 +45,9 @@
     <ClCompile Include="code\BitReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="code\PNG.Chunk.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="code\shader_in_char_star.h">
@@ -69,6 +72,9 @@
       <Filter>Header Files\png</Filter>
     </ClInclude>
     <ClInclude Include="code\BitReader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="code\PNG.Chunk.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
