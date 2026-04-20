@@ -34,7 +34,7 @@ output_t BitReader<output_t>::Peak(size_t size) {
 	for (size_t i = 0; i < size; i++) {
 		const size_t byte_offset = (m_offset + i) / 8u;
 		const size_t bit_offset_in_that_byte = (m_offset + i) % 8u;
-		const output_t current_bit = 1u << i;
+		const output_t current_bit = static_cast<output_t>(1u << i);
 		const uint8_t current_bit_in_that_byte = 1u << bit_offset_in_that_byte;
 		if (m_data[byte_offset] & current_bit_in_that_byte) {
 			result |= current_bit;
