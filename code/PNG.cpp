@@ -31,7 +31,6 @@ PNG::PNG(const void* pSysMem) {
 	bool is_not_the_last_chunk = true;
 	while (is_not_the_last_chunk) {
 		Chunk chunk;
-		Chunk::IHDR ihdr;
 
 		// reads meta data of the chunk
 		chunk.m_length = *(reinterpret_cast<const unsigned int*>(bytes + offset));
@@ -81,7 +80,6 @@ void PNG::Converts_To_Little_Endian(uint16_t& big_endian) {
 bool PNG::Load_Chunk(std::ifstream& file, std::vector<uint8_t>& compressed_data) {
 	/// not usable when the .png was embedded into the .exe file.
 	Chunk chunk;
-	Chunk::IHDR ihdr;
 
 	// meta data 
 	file.read((char*)&chunk.m_length, sizeof(chunk.m_length));
@@ -98,10 +96,19 @@ bool PNG::Load_Chunk(std::ifstream& file, std::vector<uint8_t>& compressed_data)
 /// </summary>
 bool PNG::Process_Chunk(PNG::Chunk& chunk, std::vector<uint8_t>& compressed_data) {
 	/// perform differently depending on what type the current chunk is
+	struct IHDR {
+		unsigned int m_width;
+		unsigned int m_height;
+		uint8_t m_bit_depth;
+		uint8_t m_color_type;
+		uint8_t m_compression_method;
+		uint8_t m_filter_method;
+		uint8_t m_interlace_method;
+	};
 	bool we_still_have_more_chunk_to_be_processed = true;
 	std::string this_chunk_is(chunk.m_type);
 	if (this_chunk_is == "IHDR") {
-		PNG::Chunk::IHDR ihdr = *reinterpret_cast<PNG::Chunk::IHDR*>(chunk.m_raw_blocks.get());
+		IHDR ihdr = *reinterpret_cast<IHDR*>(chunk.m_raw_blocks.get());
 		PNG::Converts_To_Little_Endian(ihdr.m_width);
 		PNG::Converts_To_Little_Endian(ihdr.m_height);
 		m_width = ihdr.m_width;

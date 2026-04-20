@@ -1,9 +1,9 @@
 #pragma once
+#include "BitReader.h"
 #include <fstream>
 #include <memory>
 #include <ostream>
 #include <vector>
-#include "BitReader.h"
 
 // YES, ALL HUFFMAN(usually MSB first) in DEFLATE are stored REVERSED in the bitsstream(LSB first)!
 // MSB: where we traverse from the root of the Huffman tree.
@@ -21,17 +21,7 @@
 class PNG {
 public:
 	struct Chunk {
-		struct IHDR {
-			unsigned int m_width;
-			unsigned int m_height;
-			uint8_t m_bit_depth;
-			uint8_t m_color_type;
-			uint8_t m_compression_method;
-			uint8_t m_filter_method;
-			uint8_t m_interlace_method;
-		};
 		struct Block {
-
 			enum CompressionType {
 				UNCOMPRESSED,
 				FIXED_HUFFMAN_CODES,
