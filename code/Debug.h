@@ -1,5 +1,5 @@
 #pragma once
-#include "./code/PNG.h"
+#include "PNG.h"
 class Debug {
 public:
 	static void Chunk(PNG::Chunk& chunk);

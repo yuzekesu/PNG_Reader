@@ -13,54 +13,72 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\png">
+      <UniqueIdentifier>{95326366-a8bb-4f97-9464-20362b1fa352}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\others">
+      <UniqueIdentifier>{09970bc9-47f0-44e7-89d6-eabd06540ac9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\png">
+      <UniqueIdentifier>{65508323-3410-456d-9640-f25e48249b76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\others">
+      <UniqueIdentifier>{e37df68f-118b-427b-a830-cd10507161fa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MemoryTracker.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Debug.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="code\Debug.cpp">
+      <Filter>Source Files\others</Filter>
     </ClCompile>
     <ClCompile Include="code\Displayer.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\others</Filter>
+    </ClCompile>
+    <ClCompile Include="code\MemoryTracker.cpp">
+      <Filter>Source Files\others</Filter>
+    </ClCompile>
+    <ClCompile Include="code\WinMain.cpp">
+      <Filter>Source Files\others</Filter>
     </ClCompile>
     <ClCompile Include="code\PNG.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\png</Filter>
     </ClCompile>
-    <ClCompile Include="WinMain.cpp">
+    <ClCompile Include="code\BitReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MemoryTracker.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Debug.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="code\Displayer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="code\HuffmanTree.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="code\PNG.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="code\shader_in_char_star.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
+    <ClInclude Include="code\Debug.h">
+      <Filter>Header Files\others</Filter>
+    </ClInclude>
+    <ClInclude Include="code\Displayer.h">
+      <Filter>Header Files\others</Filter>
+    </ClInclude>
+    <ClInclude Include="code\HuffmanTree.h">
+      <Filter>Header Files\others</Filter>
+    </ClInclude>
+    <ClInclude Include="code\MemoryTracker.h">
+      <Filter>Header Files\others</Filter>
+    </ClInclude>
+    <ClInclude Include="code\resource.h">
+      <Filter>Header Files\others</Filter>
+    </ClInclude>
+    <ClInclude Include="code\PNG.h">
+      <Filter>Header Files\png</Filter>
+    </ClInclude>
+    <ClInclude Include="code\BitReader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="VertexShader.hlsl">
+    <FxCompile Include="code\VertexShader.hlsl">
       <Filter>Resource Files</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="PNG_Reader.rc">
+    <ResourceCompile Include="code\PNG_Reader.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
