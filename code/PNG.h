@@ -21,14 +21,10 @@
 class PNG {
 public:
 	struct Chunk {
+	public:
 		struct Block {
-			enum CompressionType {
-				UNCOMPRESSED,
-				FIXED_HUFFMAN_CODES,
-				DYNAMIC_HUFFMAN_CODE
-			};
+		public:
 			bool m_is_last_block;
-			CompressionType m_type;
 		public:
 			Block() = delete;
 			Block(BitReader<uint16_t>& bit_reader, std::vector<uint8_t>& output);

@@ -277,15 +277,15 @@ PNG::Chunk::Block::Block(BitReader<uint16_t>& bit_reader, std::vector<uint8_t>& 
 	compression_type &= 0b0000011;
 	switch (compression_type) {
 	case 0b0000001:
-		m_type = FIXED_HUFFMAN_CODES;
+		// FIXED_HUFFMAN_CODES;
 		Decompress_Block_Fixed_Huffman(bit_reader, output);
 		break;
 	case 0b0000010:
-		m_type = DYNAMIC_HUFFMAN_CODE;
+		// DYNAMIC_HUFFMAN_CODE;
 		Decompress_Block_Dynamic_Huffman(bit_reader, output);
 		break;
 	default:
-		m_type = UNCOMPRESSED;
+		// UNCOMPRESSED;
 		bit_reader.Align();
 		Decompress_Block_That_Is_Uncompressed(bit_reader, output);
 		break;
