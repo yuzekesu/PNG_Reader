@@ -127,6 +127,8 @@
   <ItemGroup>
     <ClCompile Include="code\BitReader.cpp" />
     <ClCompile Include="code\Displayer.cpp" />
+    <ClCompile Include="code\PNG.Chunk.Block.cpp" />
+    <ClCompile Include="code\PNG.Chunk.cpp" />
     <ClCompile Include="code\PNG.cpp" />
     <ClCompile Include="code\Debug.cpp" />
     <ClCompile Include="code\MemoryTracker.cpp" />
