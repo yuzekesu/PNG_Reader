@@ -1,0 +1,47 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1
+
+      - name: Build project
+        run: |
+          $repoName = "${{ github.event.repository.name }}"
+          msbuild $repoName.sln /p:Configuration=Release /p:Platform=x64
+      
+      - name: Extract version from tag
+        id: version
+        run: |
+          $tag = "${{ github.ref }}".Replace("refs/tags/", "")
+          echo "tag=$tag" >> $env:GITHUB_OUTPUT
+      
+      - name: Rename executable
+        run: |
+          $repoName = "${{ github.event.repository.name }}"
+          $version = "${{ steps.version.outputs.tag }}"
+          $sourceFile = "x64\Release\$repoName.exe"
+          $targetFile = "$repoName-$version.exe"
+          Move-Item -Path $sourceFile -Destination $targetFile
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ github.event.repository.name }}-${{ steps.version.outputs.tag }}.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
