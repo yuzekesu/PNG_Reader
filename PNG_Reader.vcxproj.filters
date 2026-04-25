@@ -43,7 +43,13 @@
       <Filter>Source Files\png</Filter>
     </ClCompile>
     <ClCompile Include="code\BitReader.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\others</Filter>
+    </ClCompile>
+    <ClCompile Include="code\PNG.Chunk.Block.cpp">
+      <Filter>Source Files\png</Filter>
+    </ClCompile>
+    <ClCompile Include="code\PNG.Chunk.cpp">
+      <Filter>Source Files\png</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
