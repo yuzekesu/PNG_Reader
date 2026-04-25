@@ -94,7 +94,7 @@ void Displayer::Initialize_DirectX() {
 	buffer_swapchain.RefreshRate.Numerator = 1u;
 	buffer_swapchain.Scaling = DXGI_MODE_SCALING_CENTERED;
 	buffer_swapchain.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-	buffer_swapchain.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	buffer_swapchain.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	desc_swapchain.BufferDesc = buffer_swapchain;
 	desc_swapchain.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	desc_swapchain.Flags = 0;
@@ -309,7 +309,7 @@ void Displayer::Show(PNG& png) {
 	desc_tex.ArraySize = 1;
 	desc_tex.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
 	desc_tex.CPUAccessFlags = 0;
-	desc_tex.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc_tex.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
 	desc_tex.Height = png.m_height;
 	desc_tex.MipLevels = 1;
 	desc_tex.MiscFlags = 0;
